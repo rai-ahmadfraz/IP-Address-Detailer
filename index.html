@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Address Detailer</title>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
+</head>
+<style>
+    .ip_address{
+        margin-left: 50px;
+        padding: 15px;
+    }
+
+    .outputerror{
+        margin-left: 50px;
+        margin-top: 50px;
+        color: red;
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    button{
+        padding: 15px;
+    }
+    .remove
+    {
+        cursor: pointer;
+    }
+    .dataTables_wrapper{
+        padding: 40px;
+    }
+</style>
+<body>
+<p class="outputerror"></p>
+<input class="ip_address" id="ip_address" type="text" name="ip_address" placeholder="Enter IP Address">
+<button id="checkIpAddressDetail">Check IP Address</button>
+    <table id="datatable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Country</th>
+                <th>IP Address</th>
+                <th>Country Code</th>
+                <th></th>
+            </tr>
+        </thead>
+    </table>
+
+
+<script>
+
+    $('.ip_address').keypress(function(event) {
+        if ((event.which != 46 ) && (event.which < 48 || event.which > 57)) {
+            event.preventDefault();
+        }
+    });
+
+    var table = $('#datatable').DataTable();
+    var result = "";
+
+    $('#datatable tbody').on( 'click', '.remove', function () {
+        table.row($(this).parents('tr')).remove().draw();
+        result = "Item deleted";
+        $(".outputerror").text(result);
+        alert("Item deleted");
+    });
+
+    $("#checkIpAddressDetail").click(function(){
+        
+        var ip_address = $("#ip_address").val();
+        if(ip_address){
+            if(ip_address.match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/)){
+                var url = 'http://ip-api.com/json/'+ip_address; 
+                fetch(url).then( response => response.json() )
+                .then( data =>
+                    {
+                        if(data.country){
+                            var tablerow = table.row.add([
+                                            data.country,
+                                            ip_address,
+                                            data.countryCode,
+                                            'Delete'
+                                        ]).draw( false ).node();
+                            $('td:contains("Delete")',tablerow).addClass('remove');
+                            $(".outputerror").text("");
+                            result = "IP Address Detail Found And Added";
+                        }else{
+                            result = "No Result Found Against This IP Address";
+                            
+                        }
+                        $(".outputerror").text(result);
+                    })
+            
+            }else{
+                result = "Invalid IP Address";
+            }
+
+        }else{
+            result = "Enter IP Address";
+        }
+        $(".outputerror").text(result);
+        
+    });
+</script>
+
+</body>
+</html>
